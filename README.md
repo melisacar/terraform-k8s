@@ -2,6 +2,13 @@
 
 This guide will walk you through the process of creating an Amazon Elastic Kubernetes Service (EKS) cluster from scratch using Terraform and configuring kubectl on your local machine to manage it. We will address common challenges encountered during the setup and provide solutions.
 
+## Repository Structure
+
+- `main.tf`: Main Terraform configuration file defining resources.
+- `variables.tf`: Definitions of input variables, making the configuration flexible and reusable.
+- `.gitignore`: Specifies files and directories to ignore in the repository, including sensitive information like terraform.tfvars.
+- `LICENSE`: MIT License file.
+
 ## Prerequisites
 
 Before starting, ensure you have the following tools installed:
@@ -14,11 +21,18 @@ Before starting, ensure you have the following tools installed:
 
 You should also have an AWS account with sufficient permissions to create an EKS cluster and associated resources.
 
-## Terraform Configuration
+## Usage
 
-`main.tf` is the Terraform configuration file to create an EKS cluster.
+### Clone the Repository
 
-## Steps to Apply Terraform
+```bash
+git clone https://github.com/melisacar/terraform-k8s.git
+cd terraform-k8s
+```
+
+### Steps to Apply Terraform
+
+- `main.tf` is the Terraform configuration file to create an EKS cluster.
 
 1. Initialize Terraform:
 
@@ -26,16 +40,22 @@ You should also have an AWS account with sufficient permissions to create an EKS
 terraform init
 ```
 
-1. Validate Configuration:
+2. Validate Configuration:
 
 ```t
 terraform validate
 ```
 
-1. Apply Terraform Plan:
+3. Apply Terraform Plan:
 
 ```t
 terraform apply
+```
+
+4. Destroy Resources (When Needed)
+
+```t
+terraform destroy
 ```
 
 ## Connecting to the EKS Cluster
@@ -51,8 +71,6 @@ aws eks update-kubeconfig --region eu-north-1 --name eks-1-<random_suffix>
 ```
 
 Replace <random_suffix> with the random string appended to your cluster name (e.g., eks-1-abc12345).
-
-## Notes
 
 ### Test the Connection
 
