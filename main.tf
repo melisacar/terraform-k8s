@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 locals {
-  cluster_name = "1-eks-${random_string.suffix.result}"
+  cluster_name = "eks-1-${random_string.suffix.result}"
 }
 
 resource "random_string" "suffix" {
@@ -15,7 +15,7 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "5.8.1"
 
-  name = "eks-vpc"
+  name = "eks-1-vpc"
 
   cidr = "10.0.0.0/16"
 
@@ -23,8 +23,8 @@ module "vpc" {
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
   public_subnets  = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
 
-  enable_nat_gateway   = false
-  single_nat_gateway   = false
+  enable_nat_gateway   = true
+  single_nat_gateway   = true
   enable_dns_hostnames = false
 
   # Adds labels to subnets. Important for Kubernetes load balancers.
@@ -44,7 +44,7 @@ module "eks" {
   cluster_name    = local.cluster_name # Unique EKS cluster name taken from local variable.
   cluster_version = "1.29"
 
-  cluster_endpoint_public_access           = true # Provides access to the EKS API from the public internet.
+  cluster_endpoint_public_access           = true # Indicates whether or not the Amazon EKS public API server endpoint is enabled
   enable_cluster_creator_admin_permissions = true
 
   cluster_addons = {
@@ -86,9 +86,10 @@ module "eks" {
 
 
 # https://aws.amazon.com/blogs/containers/amazon-ebs-csi-driver-is-now-generally-available-in-amazon-eks-add-ons/ 
-data "aws_iam_policy" "ebs_csi_policy" {
-  arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-}
+#data "aws_iam_policy" "ebs_csi_policy" {
+#  arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+#}
+# Above argument ("aws_iam_policy") is deprecated
 
 module "irsa-ebs-csi" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
@@ -97,6 +98,21 @@ module "irsa-ebs-csi" {
   create_role                   = true
   role_name                     = "AmazonEKSTFEBSCSIRole-${module.eks.cluster_name}"
   provider_url                  = module.eks.oidc_provider
-  role_policy_arns              = [data.aws_iam_policy.ebs_csi_policy.arn]
+  #role_policy_arns              = [data.aws_iam_policy.ebs_csi_policy.arn] -# "aws_iam_policy" argument is deprecated
   oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
+}
+
+resource "aws_iam_role_policy" "ebs_csi_policy" {
+  name   = "ebs-csi-policy-${module.eks.cluster_name}"
+  role   = module.irsa-ebs-csi.iam_role_name
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = ["ec2:Describe*"]
+        Effect   = "Allow"
+        Resource = "*"
+      }
+    ]
+  })
 }
