@@ -42,19 +42,19 @@ cd terraform-k8s
 terraform init
 ```
 
-1. **Validate Configuration:**
+2. **Validate Configuration:**
 
 ```bash
 terraform validate
 ```
 
-1. **Apply Terraform Plan:**
+3. **Apply Terraform Plan:**
 
 ```bash
 terraform apply
 ```
 
-1. **Destroy Resources (When Needed)**
+4. **Destroy Resources (When Needed)**
 
 ```bash
 terraform destroy
@@ -74,7 +74,7 @@ aws eks update-kubeconfig --region eu-north-1 --name eks-1-<random_suffix>
 
 Replace <random_suffix> with the random string appended to your cluster name (e.g., eks-1-abc12345).
 
-1. **Test the Connection**
+2. **Test the Connection**
 
 Verify that kubectl is configured correctly by running:
 
