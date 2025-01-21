@@ -105,3 +105,79 @@ aws sts get-caller-identity
     "Arn": "arn:aws:iam::123456789012:user/your-user-name"
 }
 ```
+
+---
+
+## Troubleshooting Notes
+
+### Resolving Errors After `terraform destroy`
+
+- **Issue**
+
+```java
+Error: deleting **EC2 Subnet** (subnet-03e...): operation error EC2: DeleteSubnet, https response error StatusCode: 400, RequestID: 429c6..., api error DependencyViolation: The subnet 'subnet-03e...' has dependencies and cannot be deleted.
+```
+
+```java
+Error: deleting **EC2 Internet Gateway** (igw-04a...): detaching EC2 Internet Gateway (igw-04a...) from VPC (vpc-04f...): operation error EC2: DetachInternetGateway, https response error StatusCode: 400, RequestID: 66e97..., api error DependencyViolation: Network vpc-04f198515baf8ac52 has some mapped public address(es). Please unmap those public address(es) before detaching the gateway.
+```
+
+#### **Resolution Steps**
+
+- **Run `terraform plan` with `-destroy` flag**
+This will help you plan the destruction of resources.
+
+```bash
+terraform plan -destroy
+```
+
+- **Create a plan file for destruction**
+This stores the plan output into a file named `tfplan`.
+
+```bash
+terraform plan -destroy -out=tfplan
+```
+
+- **Apply the destruction plan**
+After confirming the destruction plan is correct, apply it.
+
+```bash
+terraform apply “tfplan” 
+```
+
+**Still Facing Errors?**
+
+If the issue persists with the same errors regarding **EC2 Subnet** and **Internet Gateway**, follow these additional steps:
+
+- **Inspect the resources in Terraform state**
+This helps you check the resources that Terraform is managing.
+
+```bash
+terraform state list
+```
+
+**Expected Output Example:**
+
+```bash
+- module.vpc.aws_internet_gateway.this[0]
+- module.vpc.aws_subnet.public[0]
+- module.vpc.aws_vpc.this[0]
+```
+
+- **Manually remove problematic resources from Terraform state**
+
+Sometimes, resources need to be manually removed from the state to ensure Terraform does not try to manage them anymore.
+
+Example command to remove an Internet Gateway from the state:
+
+```bash
+terraform state rm module.vpc.aws_internet_gateway.this[0]
+```
+
+You can remove any other resources that are causing issues in a similar manner. Ensure that no other resources depend on the ones you're removing.
+
+#### References
+
+- Terraform `state rm` documentation for more details on removing resources from Terraform state:
+
+- [Terraform State Remove](https://developer.hashicorp.com/terraform/cli/commands/state/r)
