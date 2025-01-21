@@ -106,8 +106,6 @@ aws sts get-caller-identity
 }
 ```
 
----
-
 ## Troubleshooting Notes
 
 ### Resolving Errors After `terraform destroy`
