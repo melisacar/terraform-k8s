@@ -105,6 +105,7 @@ aws sts get-caller-identity
     "Arn": "arn:aws:iam::123456789012:user/your-user-name"
 }
 ```
+---
 
 ## Troubleshooting Notes
 
